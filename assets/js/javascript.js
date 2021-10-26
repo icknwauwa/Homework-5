@@ -1,55 +1,44 @@
-$(document).ready(function () {// essentially tells engine to load 1)html & 2)css first.
-    //display current day & time.
-    $("#currentDay").text(moment().format("MMMM Do YYYY, h:mm:ss a"));
+const formatDate = (num) => {
+    let selector;
 
-   
-    $(".saveBtn").on("click", function () {
-        //get nearby values.
-        console.log(this);
-        var text = $(this).siblings(".description").val();
-        var time = $(this).parent().attr("id");
-
-       
-        localStorage.setItem(time, text);
-    })
-    //load any saved data from LocalStorage - do this for each hour created.
-    $("#hour9 .description").val(localStorage.getItem("hour9"));
-    $("#hour10 .description").val(localStorage.getItem("hour10"));
-    $("#hour11 .description").val(localStorage.getItem("hour11"));
-    $("#hour12 .description").val(localStorage.getItem("hour12"));
-    $("#hour13 .description").val(localStorage.getItem("hour13"));
-    $("#hour14 .description").val(localStorage.getItem("hour14"));
-    $("#hour15 .description").val(localStorage.getItem("hour15"));
-    $("#hour16 .description").val(localStorage.getItem("hour16"));
-    $("#hour17 .description").val(localStorage.getItem("hour17"));
-
-
-    function hourTracker() {
-        //get current number of hours.
-        var currentHour = moment().hour();
-
-        
-        $(".time-block").each(function () {
-            var blockHour = parseInt($(this).attr("id").split("hour")[1]);
-            console.log( blockHour, currentHour)
-
-           
-            if (blockHour < currentHour) {
-                $(this).addClass("past");
-                $(this).removeClass("future");
-                $(this).removeClass("present");
-            }
-            else if (blockHour === currentHour) {
-                $(this).removeClass("past");
-                $(this).addClass("present");
-                $(this).removeClass("future");
-            }
-            else {
-                $(this).removeClass("present");
-                $(this).removeClass("past");
-                $(this).addClass("future");
-            }
-        })
+    if (num <= 0) {
+        selector = 4;
+    } else if ((num > 3 && num < 21) || num % 10 > 3) {
+        selector = 0;
+    } else {
+        selector = num % 10;
     }
-    hourTracker();
-})
+
+    return num + ['th', 'st', 'nd', 'rd', ''][selector];
+};
+
+document.getElementById('currentDay').innerText = `${moment().format('dddd')}, ${moment().format('MMMM')} ${formatDate(moment().date())}`;
+
+const getBlock = (status, time) => {
+    let hour = '';
+    if (time < 12){
+        hour = time+'AM';
+    }
+    if (time === 12){
+        hour = time+'PM';
+    }
+    if (time > 12){
+        hour = time-12+'PM';
+    }
+    return "<div class='row "+status+"'><div class='hour'>"+hour+"</div><textarea></textarea><button class='saveBtn'>💾</button></div>";
+}
+
+const hours = [9, 10, 11, 12, 13, 14, 15, 16, 17];
+
+for (let i=0; i<hours.length; i++){
+    const currentHour = moment().format('H');
+    if (currentHour > hours[i]){
+        $('#blocks').append(getBlock('past', hours[i]));
+    }
+    else if (currentHour == hours[i]){
+        $('#blocks').append(getBlock('present', hours[i]));
+    }
+    else if (currentHour < hours[i]){
+        $('#blocks').append(getBlock('future', hours[i]));
+    }
+}
